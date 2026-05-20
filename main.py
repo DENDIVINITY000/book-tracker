@@ -28,7 +28,7 @@ def add_book(books):
     # Проверка на дубликаты (автор + название)
     for book in books:
         if book['author'].lower() == author.lower() and book['title'].lower() == title.lower():
-            print("❌ Ошибка: Такая книга уже существует в трекере!")
+            print("Ошибка: Такая книга уже существует в трекере!")
             return
 
     # Валидация оценки
@@ -38,9 +38,9 @@ def add_book(books):
             if 1 <= rating <= 5:
                 break
             else:
-                print("❌ Оценка должна быть от 1 до 5.")
+                print("Оценка должна быть от 1 до 5.")
         except ValueError:
-            print("❌ Введите целое число.")
+            print("Введите целое число.")
 
     # Валидация даты
     while True:
@@ -49,7 +49,7 @@ def add_book(books):
             datetime.strptime(date_str, '%Y-%m-%d')
             break
         except ValueError:
-            print("❌ Неверный формат даты. Используйте ГГГГ-ММ-ДД.")
+            print("Неверный формат даты. Используйте ГГГГ-ММ-ДД.")
 
     book = {
         "author": author,
@@ -59,7 +59,7 @@ def add_book(books):
     }
     books.append(book)
     save_books(books)
-    print(f"✅ Книга '{title}' успешно добавлена!")
+    print(f"Книга '{title}' успешно добавлена!")
 
 def show_all_books(books):
     """Вывод списка всех книг."""
@@ -107,11 +107,11 @@ def delete_book(books):
         if 0 <= idx < len(books):
             removed = books.pop(idx)
             save_books(books)
-            print(f"✅ Книга '{removed['title']}' удалена.")
+            print(f"Книга '{removed['title']}' удалена.")
         else:
-            print("❌ Неверный номер.")
+            print("Неверный номер.")
     except ValueError:
-        print("❌ Введите число.")
+        print("Введите число.")
 
 def main():
     """Главный цикл приложения."""
@@ -143,7 +143,7 @@ def main():
             print("До свидания!")
             break
         else:
-            print("❌ Неверный ввод. Попробуйте снова.")
+            print("Неверный ввод. Попробуйте снова.")
 
 if __name__ == "__main__":
     main()
