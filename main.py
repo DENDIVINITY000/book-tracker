@@ -2,22 +2,54 @@ import json
 import os
 from datetime import datetime
 
-DATA_FILE = 'books.json'
+# Фиксированный путь к файлу
+DATA_FILE = r'C:\Projects\book-tracker-main\books.json'
+
+def ensure_directory_exists():
+    """Проверяет и создает директорию для файла, если её нет."""
+    directory = os.path.dirname(DATA_FILE)
+    if directory and not os.path.exists(directory):
+        try:
+            os.makedirs(directory)
+            print(f"Создана директория: {directory}")
+        except Exception as e:
+            print(f"Ошибка при создании директории: {e}")
 
 def load_books():
     """Загружает список книг из JSON-файла."""
+    ensure_directory_exists()
+    
     if not os.path.exists(DATA_FILE):
+        print(f"Файл {DATA_FILE} не найден, будет создан новый.")
         return []
+    
     try:
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
+            content = f.read().strip()
+            if not content:
+                return []
+            return json.loads(content)
+    except json.JSONDecodeError as e:
+        print(f"Ошибка чтения JSON: {e}")
+        return []
+    except Exception as e:
+        print(f"Ошибка при загрузке: {e}")
         return []
 
 def save_books(books):
     """Сохраняет список книг в JSON-файл."""
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(books, f, ensure_ascii=False, indent=4)
+    try:
+        ensure_directory_exists()
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(books, f, ensure_ascii=False, indent=4)
+        print(f" Данные сохранены в: {DATA_FILE}")
+        return True
+    except PermissionError:
+        print(f" Ошибка доступа! Нет прав для записи в {DATA_FILE}")
+        return False
+    except Exception as e:
+        print(f" Ошибка при сохранении: {e}")
+        return False
 
 def add_book(books):
     """Добавление новой книги с проверкой дубликатов."""
@@ -25,10 +57,14 @@ def add_book(books):
     author = input("Автор: ").strip()
     title = input("Название: ").strip()
     
-    # Проверка на дубликаты (автор + название)
+    if not author or not title:
+        print(" Ошибка: Автор и название не могут быть пустыми!")
+        return
+    
+    # Проверка на дубликаты
     for book in books:
         if book['author'].lower() == author.lower() and book['title'].lower() == title.lower():
-            print("Ошибка: Такая книга уже существует в трекере!")
+            print(" Ошибка: Такая книга уже существует в трекере!")
             return
 
     # Валидация оценки
@@ -57,9 +93,13 @@ def add_book(books):
         "rating": rating,
         "date_read": date_str
     }
+    
     books.append(book)
-    save_books(books)
-    print(f"Книга '{title}' успешно добавлена!")
+    if save_books(books):
+        print(f" Книга '{title}' успешно добавлена!")
+    else:
+        print(f" Книга не добавлена из-за ошибки сохранения!")
+        books.pop()  # Удаляем книгу из списка, если сохранение не удалось
 
 def show_all_books(books):
     """Вывод списка всех книг."""
@@ -78,6 +118,7 @@ def show_average_rating(books):
         return
     avg = sum(book['rating'] for book in books) / len(books)
     print(f"Средняя оценка по всем книгам: {avg:.2f}")
+    print(f"Всего книг: {len(books)}")
 
 def show_author_stats(books):
     """Статистика по авторам."""
@@ -106,8 +147,11 @@ def delete_book(books):
         idx = int(input("Введите номер книги для удаления: ")) - 1
         if 0 <= idx < len(books):
             removed = books.pop(idx)
-            save_books(books)
-            print(f"Книга '{removed['title']}' удалена.")
+            if save_books(books):
+                print(f" Книга '{removed['title']}' удалена.")
+            else:
+                print(f" Ошибка при удалении книги!")
+                books.insert(idx, removed)  # Восстанавливаем книгу
         else:
             print("Неверный номер.")
     except ValueError:
@@ -115,7 +159,10 @@ def delete_book(books):
 
 def main():
     """Главный цикл приложения."""
+    print(f" Файл данных: {DATA_FILE}")
     books = load_books()
+    print(f" Загружено книг: {len(books)}")
+    
     while True:
         print("\n" + "="*30)
         print("ТРЕКЕР ПРОЧИТАННЫХ КНИГ")
@@ -144,3 +191,6 @@ def main():
             break
         else:
             print("Неверный ввод. Попробуйте снова.")
+
+if __name__ == "__main__":
+    main()
