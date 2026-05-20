@@ -144,6 +144,3 @@ def main():
             break
         else:
             print("Неверный ввод. Попробуйте снова.")
-
-if __name__ == "__main__":
-    main()
